@@ -8,9 +8,22 @@ interface Props {
 
 export const Verifications: React.FC<Props> = ({ verifications, onChange }) => {
   const handleChange = (vIndex: number, cIndex: number, value: boolean) => {
-    const v = structuredClone(verifications);
+
+    const v = verifications.map((verification, index) => {
+      if (index !== vIndex) return verification;
+  
+      return {
+        ...verification,
+        eligibility: {
+          ...verification.eligibility,
+          checks: verification.eligibility.checks.map((check, idx) => {
+            if (idx !== cIndex) return check;
+            return { ...check, passed: value };
+          }),
+        },
+      };
+    });
     
-    v[vIndex].eligibility.checks[cIndex].passed = value;
     onChange(v);
   };
 
@@ -25,8 +38,10 @@ export const Verifications: React.FC<Props> = ({ verifications, onChange }) => {
             </div>
             <div className="flex flex-wrap">
               {verification.eligibility.checks.map((condition, cIndex) => {
+                const key = `${verification.source}-${condition.name}`
+                
                 return (
-                  <div className="p-px w-1/2" key={condition.name}>
+                  <div className="p-px w-1/2" key={key}>
                     <div
                       key={condition.name}
                       className="flex flex-col bg-white p-4 rounded-lg"
